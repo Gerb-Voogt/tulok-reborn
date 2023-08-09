@@ -1,4 +1,4 @@
-use std::{io, thread, time::Duration};
+use std::{io, fs, process};
 use tui::{
     backend::{CrosstermBackend, Backend, self},
     widgets::{Widget, Block, Borders, TableState, Table, Cell, Row},
