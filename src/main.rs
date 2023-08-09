@@ -80,11 +80,13 @@ fn ui<B: Backend>(f: &mut Frame<B>) {
         .constraints([Constraint::Percentage(100)].as_ref())
         .split(chunks[1]);
 
-    let course = create_course_from_yaml_file("/home/gerb/uni/courses/SC/SC42056-OPT/");
+    let course = create_course_from_yaml_file("/home/gerb/uni/courses/SC/SC42150-SSP/");
 
-    draw_course_info_block(course, f, chunk_left[0]);
+    draw_course_info_block(&course, f, chunk_left[0]);
     draw_course_operations(f, chunk_left[1]);
     draw_current_courses_block(f, chunk_left[2]);
+
+    draw_tasks_view(&course, f, chunk_right[0]);
 
     let block = Block::default()
         .title("Up Next")
@@ -93,7 +95,7 @@ fn ui<B: Backend>(f: &mut Frame<B>) {
 }
 
 
-fn draw_course_info_block<B>(course: Course, f: &mut Frame<B>, layout_chunk: Rect)
+fn draw_course_info_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk: Rect)
     where B: Backend {
 
     let t = Table::new(vec![
@@ -141,6 +143,45 @@ fn draw_course_operations<B>(f: &mut Frame<B>, layout_chunk: Rect)
     f.render_widget(t, layout_chunk);
 }
 
+fn draw_tasks_view<B>(course: &Course, f: &mut Frame<B>, layout_chunk: Rect)
+    where B: Backend {
+
+    let t = get_tasks_for_course(&course)
+        .block(Block::default().borders(Borders::ALL).title("Up Next"))
+        .widths(&[Constraint::Percentage(100)]);
+    f.render_widget(t, layout_chunk);
+}
+
+/// TODO: Fix this to instead directly hook into the raw taskwarrior data rather then
+/// using the roundabout way of accesing through the command that I am using now
+fn get_tasks_for_course(course: &Course) -> Table<'static> {
+    let header = process::Command::new("sh")
+        .arg("-c")
+        .arg(format!("task rc.verbose=none +{} | awk 'NR==2' | tr -s ' ' | tr ' ' ','", course.code))
+        .output()
+        .expect("Failed to run command");
+    let output = process::Command::new("sh")
+        .arg("-c")
+        .arg(format!("task rc.verbose=none +{} | awk 'NR>=4' | tr -s ' ' | tr ' ', ','", course.code))
+        .output()
+        .expect("Failed to run command");
+
+    let header_raw = String::from_utf8(header.stdout).unwrap();
+    let header_tags: Vec<&str> = header_raw.split(",").collect();
+
+    let output_raw = String::from_utf8(output.stdout).unwrap();
+    let output_rows: Vec<&str> = output_raw.split('\n').collect();
+
+    let mut rows: Vec<Row> = Vec::new();
+    for row in output_rows {
+        // println!("{}", row);
+        // let row_data: Vec<&str> = row.split(",").collect();
+        // let cells: Vec<Cell> = row_data.iter().map(|c| Cell::from(c.to_string())).collect();
+        // rows.push(Row::new(cells));
+    }
+    Table::new(rows)
+}
+
 
 fn main() -> Result<(), io::Error> {
     enable_raw_mode()?;
@@ -171,5 +212,9 @@ fn main() -> Result<(), io::Error> {
         DisableMouseCapture
     )?;
     terminal.show_cursor()?;
+
+    let course = create_course_from_yaml_file("/home/gerb/uni/courses/SC/SC42150-SSP/");
+    get_tasks_for_course(&course);
+
     Ok(())
 }
