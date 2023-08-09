@@ -31,14 +31,32 @@ struct Course {
 /// Note that in the current state this function may panic
 /// it would be better to rewrite this such that the error is handled explicitly
 /// rather then the program crashing outright
+/// 
+/// It might also be better to make it such that this function
+/// accepts an actual path object rather then a string.
 fn create_course_from_yaml_file(course_path: &str) -> Course {
     // Read the file
     let f = std::fs::File::open(course_path.to_owned() + "/info.yaml").expect("Could not read file!");
     serde_yaml::from_reader(f).expect("Could not read file!")
 }
 
+/// This function may panic. Should make it so explictly return a Result type
+/// This function is also kinda gross. Need to figure out whether there is a better way to do this
+/// because it has unwraps all over the place.
 fn retrieve_courses_active(courses_dir: &str) -> Vec<Course> {
+    let mut course_list: Vec<Course> = Vec::new();
 
+    let base_course_code_paths = fs::read_dir(courses_dir).unwrap();
+    for course_paths in base_course_code_paths {
+        let course_dirs = fs::read_dir(course_paths.unwrap().path().display().to_string()).unwrap();
+        for course_dir in course_dirs {
+            let course = create_course_from_yaml_file(&course_dir.unwrap().path().display().to_string());
+            if course.active == true {
+                course_list.push(course);
+            }
+        }
+    }
+    course_list
 }
 
 
@@ -53,7 +71,7 @@ fn ui<B: Backend>(f: &mut Frame<B>) {
     let chunk_left = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
-        .constraints([Constraint::Percentage(25), Constraint::Percentage(75)].as_ref())
+        .constraints([Constraint::Percentage(25), Constraint::Percentage(25), Constraint::Percentage(50)].as_ref())
         .split(chunks[0]);
 
     let chunk_right = Layout::default()
@@ -65,13 +83,8 @@ fn ui<B: Backend>(f: &mut Frame<B>) {
     let course = create_course_from_yaml_file("/home/gerb/uni/courses/SC/SC42056-OPT/");
 
     draw_course_info_block(course, f, chunk_left[0]);
-
-
-    let block = Block::default()
-        .title("Current Courses")
-        .borders(Borders::ALL);
-    f.render_widget(block, chunk_left[1]);
-
+    draw_course_operations(f, chunk_left[1]);
+    draw_current_courses_block(f, chunk_left[2]);
 
     let block = Block::default()
         .title("Up Next")
@@ -100,6 +113,32 @@ fn draw_course_info_block<B>(course: Course, f: &mut Frame<B>, layout_chunk: Rec
 fn draw_current_courses_block<B>(f: &mut Frame<B>, layout_chunk: Rect) 
     where B: Backend {
 
+    let mut rows: Vec<Row> = Vec::new();
+    let active_courses = retrieve_courses_active(COURSES_DIR);
+
+    for course in active_courses {
+        rows.push(
+            Row::new(vec![Cell::from(format!("{}-{}", course.code, course.short))]),
+        )
+    }
+    let t = Table::new(rows)
+        .block(Block::default().borders(Borders::ALL).title("Active Courses"))
+        .widths(&[Constraint::Percentage(100)]);
+    f.render_widget(t, layout_chunk);
+}
+
+fn draw_course_operations<B>(f: &mut Frame<B>, layout_chunk: Rect)
+    where B: Backend {
+
+    let t = Table::new(vec![
+        Row::new(vec![Cell::from(format!("Open Files"))]),
+        Row::new(vec![Cell::from(format!("Open Notes"))]),
+        Row::new(vec![Cell::from(format!("Open Brightspace"))]),
+        ])
+        .block(Block::default().borders(Borders::ALL).title("Operations"))
+        .widths(&[Constraint::Percentage(100)]);
+
+    f.render_widget(t, layout_chunk);
 }
 
 
@@ -132,6 +171,5 @@ fn main() -> Result<(), io::Error> {
         DisableMouseCapture
     )?;
     terminal.show_cursor()?;
-
     Ok(())
 }
