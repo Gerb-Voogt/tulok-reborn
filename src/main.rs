@@ -13,6 +13,9 @@ use crossterm::{
 };
 use serde::{Deserialize, Serialize};
 
+
+const COURSES_DIR: &str = "/home/gerb/uni/courses/";
+
 // Deriving these allows for automagically importing the yaml files
 #[derive(Serialize, Deserialize)] 
 struct Course {
