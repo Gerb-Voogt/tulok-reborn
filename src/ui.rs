@@ -225,7 +225,7 @@ pub fn draw_task_status_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
     ])
         .block(Block::default()
             .borders(Borders::ALL)
-            .style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD))
+            .style(Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD))
             .title("Uni Tasks State"))
         .widths(&[Constraint::Percentage(100)]);
     f.render_widget(t, layout_chunk);
