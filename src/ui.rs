@@ -124,9 +124,10 @@ pub fn draw_tasks_view_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk:
         let due_date = task.due();
         let days_until;
 
+
         match due_date {
             Some(due_date) => {
-                let diff = today.signed_duration_since(due_date.and_utc().naive_utc());
+                let diff = due_date.signed_duration_since(today);
                 days_until = diff.num_days();
             }
             None => { 
@@ -136,7 +137,7 @@ pub fn draw_tasks_view_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk:
 
         let row_data: Vec<Cell> = vec![
             Cell::from(format!("{}", task.id().unwrap())),
-            Cell::from(format!("{}d", days_until*-1)),
+            Cell::from(format!("{}d", days_until)),
             Cell::from(format!("{}", task.description())),
             Cell::from(format!("{}", task.urgency().unwrap())),
         ];
