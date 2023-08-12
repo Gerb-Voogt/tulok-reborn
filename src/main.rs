@@ -4,6 +4,7 @@
 mod tasks;
 mod course;
 mod ui;
+mod app;
 
 use course::*;
 use ui::*;
@@ -24,7 +25,16 @@ use crossterm::{
 };
 use serde::{Deserialize, Serialize};
 
-fn main() -> Result<(), io::Error> {
+
+fn close_application() -> anyhow::Result<()> {
+    disable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, LeaveAlternateScreen, DisableMouseCapture)?;
+    Ok(())
+}
+
+
+fn main() -> anyhow::Result<()> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
@@ -46,13 +56,12 @@ fn main() -> Result<(), io::Error> {
     }
 
     // Clean up the terminal again
-    disable_raw_mode()?;
+    close_application()?;
     execute!(
         terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
     )?;
     terminal.show_cursor()?;
 
     Ok(())
 }
+
