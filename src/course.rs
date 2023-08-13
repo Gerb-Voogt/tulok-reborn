@@ -1,9 +1,13 @@
-use std::fs;
+use std::{
+    fs,
+    fs::DirEntry,
+};
 use serde::{Deserialize, Serialize};
 use tui::style::Color;
 use regex::Regex;
 
 pub const COURSES_DIR: &str = "/home/gerb/uni/courses/";
+pub const NOTES_DIR: &str = "/home/gerb/uni/Vault-MSc/";
 
 // Deriving these allows for automagically importing the yaml files
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq)] 
@@ -15,6 +19,40 @@ pub struct Course {
     pub quarter: String,
     pub url: String,
     pub active: bool,
+}
+
+impl Course {
+    pub fn find_notes_dir(&self) -> Option<DirEntry> {
+        self.find_matching_dirs_recursive(NOTES_DIR)
+    }
+
+    pub fn find_files_dir(&self) -> Option<DirEntry> {
+        self.find_matching_dirs_recursive(COURSES_DIR)
+    }
+
+    fn find_matching_dirs_recursive(&self, search_path: &str) -> Option<DirEntry> {
+        let base_dir = std::path::Path::new(search_path);
+        let top_level_dirs = fs::read_dir(base_dir).unwrap();
+        
+        for entry in top_level_dirs {
+            let path = entry.unwrap().path();
+            let metadata = fs::metadata(&path).unwrap();
+
+            if metadata.is_file() {
+                continue;
+            } else {
+                let sub_dirs = fs::read_dir(path).unwrap();
+                for dir in sub_dirs {
+                    let search_string = format!("{}-{}", &self.code, &self.short);
+                    let dir = dir.unwrap();
+                    if dir.path().display().to_string().contains(&search_string) {
+                        return Some(dir);
+                    }
+                }
+            }
+        }
+        None
+    }
 }
 
 /// Note that in the current state this function may panic

@@ -5,6 +5,7 @@ mod tasks;
 mod course;
 mod ui;
 mod app;
+mod tmux;
 
 // Probably bad practice but w/e it works for now
 use course::*;
@@ -48,7 +49,14 @@ fn run_app<B>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<()>
                 KeyCode::Char('q') => return Ok(()),
                 KeyCode::Char('j') => app.next(),
                 KeyCode::Char('k') => app.previous(),
-                KeyCode::Enter => app.update_highlighted_course(),
+                KeyCode::Char('F') => {
+                    app.open_files();
+                    return Ok(());
+                },
+                KeyCode::Char('N') => {
+                    app.open_notes();
+                    return Ok(());
+                },
                 _ => {},
             }
         }
