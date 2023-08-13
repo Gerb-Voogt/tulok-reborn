@@ -1,4 +1,13 @@
-use crate::course::{self, Course, retrieve_courses_active, COURSES_DIR};
+use std::process;
+
+use crate::course::{
+    self,
+    Course,
+    retrieve_courses_active,
+    COURSES_DIR
+};
+use crate::tmux;
+
 use tui::widgets::TableState;
 
 #[derive(Debug)]
@@ -44,7 +53,8 @@ impl App {
             }
             None => 0,
         };
-        self.state.select(Some(i))
+        self.state.select(Some(i));
+        self.update_highlighted_course();
     }
 
     pub fn previous(&mut self) {
@@ -58,12 +68,35 @@ impl App {
             }
             None => 0,
         };
-        self.state.select(Some(i))
+        self.state.select(Some(i));
+        self.update_highlighted_course();
     }
 
     pub fn update_highlighted_course(&mut self) {
         let i = self.state.selected().unwrap_or_default();
         let course_list = self.active_courses.clone();
         self.highlighted_course = course_list[i].clone();
+    }
+
+    pub fn open_notes(&self) {
+        let notes_dir = self.highlighted_course
+            .find_notes_dir()
+            .unwrap();
+        let tmux_session_name = format!("{}-Notes", self.highlighted_course.code);
+        tmux::open_tmux_session(&tmux_session_name, notes_dir);
+        tmux::switch_to_tmux_session(&tmux_session_name)
+    }
+
+    pub fn open_files(&self) {
+        let files_dir = self.highlighted_course
+            .find_files_dir()
+            .unwrap();
+        let tmux_session_name = format!("{}-Files", self.highlighted_course.code);
+        tmux::open_tmux_session(&tmux_session_name, files_dir);
+        tmux::switch_to_tmux_session(&tmux_session_name)
+    }
+
+    pub fn open_brightspace(&self) {
+        unimplemented!();
     }
 }
