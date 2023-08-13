@@ -9,6 +9,9 @@ Note that this project is only public as it is technically part of my dotfiles. 
 In the future parts of this code might be changed to either add, change or remove functionality. Additionally this version of the code is not at all robust, having for example unwraps all over the place. The app is currently in a working state so it will be left as is for now but in the future it might be rewritten such that most if not all of the unwraps are removed.
 
 
+## Notes to self
+- In the future look into allowing for actually selecting, opening and editing notes directly from the dashboard rather then just opening the folder.
+
 
 
 
