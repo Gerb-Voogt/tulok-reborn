@@ -97,6 +97,10 @@ impl App {
     }
 
     pub fn open_brightspace(&self) {
-        unimplemented!();
+        process::Command::new("sh")
+            .arg("-c")
+            .arg(format!("firefox {}", self.highlighted_course.url))
+            .output()
+            .expect("Failed to run command!");
     }
 }

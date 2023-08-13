@@ -57,6 +57,10 @@ fn run_app<B>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<()>
                     app.open_notes();
                     return Ok(());
                 },
+                KeyCode::Char('B') => {
+                    app.open_brightspace();
+                    return Ok(());
+                },
                 _ => {},
             }
         }
