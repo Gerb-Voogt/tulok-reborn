@@ -1,8 +1,12 @@
 use std::fs;
 use serde::{Deserialize, Serialize};
+use tui::style::Color;
+use regex::Regex;
+
+pub const COURSES_DIR: &str = "/home/gerb/uni/courses/";
 
 // Deriving these allows for automagically importing the yaml files
-#[derive(Serialize, Deserialize)] 
+#[derive(Serialize, Deserialize, Clone)] 
 pub struct Course {
     pub title: String,
     pub short: String,
@@ -44,3 +48,20 @@ pub fn retrieve_courses_active(courses_dir: &str) -> Vec<Course> {
     course_list
 }
 
+
+pub fn get_color_for_course_code(course: Course) -> Color {
+    let re = Regex::new(r"([A-Z]+)").unwrap();
+    let course_code_string = &course.code;
+    let caps = re.captures(course_code_string).unwrap();
+
+    let prefix = caps.get(0).unwrap().as_str(); // Unwrap here because formatting should be consistent
+    match prefix {
+        "AM" | "TW" | "WI" => Color::Magenta,
+        "CESE" | "EE" | "ET" => Color::Red,
+        "CS" | "IN" | "CSE" => Color::Cyan,
+        "WB" | "ME" => Color::Yellow,
+        "SC" => Color::Blue,
+        "RO" => Color::Green,
+        _ => Color::Gray,
+    }
+}
