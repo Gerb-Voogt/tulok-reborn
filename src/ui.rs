@@ -36,7 +36,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let chunk_left = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
-        .constraints([Constraint::Percentage(25), Constraint::Percentage(25), Constraint::Percentage(50)].as_ref())
+        .constraints([Constraint::Percentage(25), Constraint::Percentage(50), Constraint::Percentage(25)].as_ref())
         .split(chunks[0]);
 
     let chunk_right = Layout::default()
@@ -57,8 +57,8 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let course = &app.highlighted_course.clone();
 
     draw_course_info_block(&course, f, chunk_left[0]);
-    draw_course_operations_block(f, chunk_left[1]);
-    draw_current_courses_block(f, chunk_left[2], app);
+    draw_current_courses_block(f, chunk_left[1], app);
+    draw_course_operations_block(f, chunk_left[2]);
     draw_date_block(f, chunk_right_top[0]);
     draw_task_status_block(f, chunk_right_top[1]);
     draw_tasks_view_block(&course, f, chunk_right[1]);
@@ -110,9 +110,9 @@ pub fn draw_course_operations_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
     where B: Backend {
 
     let t = Table::new(vec![
-        Row::new(vec![Cell::from(format!("Files"))]),
-        Row::new(vec![Cell::from(format!("Notes"))]),
-        Row::new(vec![Cell::from(format!("Brightspace"))]),
+        Row::new(vec![Cell::from(format!("[F]iles"))]),
+        Row::new(vec![Cell::from(format!("[N]otes"))]),
+        Row::new(vec![Cell::from(format!("[B]rightspace"))]),
         ])
         .block(Block::default().borders(Borders::ALL).title("Operations"))
         .widths(&[Constraint::Percentage(100)]);
