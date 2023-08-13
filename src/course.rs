@@ -6,7 +6,7 @@ use regex::Regex;
 pub const COURSES_DIR: &str = "/home/gerb/uni/courses/";
 
 // Deriving these allows for automagically importing the yaml files
-#[derive(Serialize, Deserialize, Clone)] 
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)] 
 pub struct Course {
     pub title: String,
     pub short: String,

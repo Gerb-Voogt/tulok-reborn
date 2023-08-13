@@ -1,9 +1,14 @@
-use crate::{*, tasks::get_pending_tasks}; // Probably bad practice but works for now
+use crate::{
+    tasks::{get_pending_tasks, get_task_styling},
+    course::*,
+    create_course_from_yaml_file,
+    app::App,
+}; // Probably bad practice but works for now
 
 use std::error::Error;
+use std::process;
 
 // Update later such that this is pulled from a config file instead
-const COURSES_DIR: &str = "/home/gerb/uni/courses/";
 
 use chrono;
 use tui::{
@@ -11,7 +16,7 @@ use tui::{
     widgets::{Widget, Block, Borders, TableState, Table, Cell, Row},
     layout::{Layout, Constraint, Direction, Rect},
     Terminal,
-    Frame, text::Span, style::{Style, Color, Modifier},
+    Frame, text::{Span, Spans}, style::{Style, Color, Modifier},
 };
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
@@ -20,7 +25,7 @@ use crossterm::{
 };
 use serde::{Deserialize, Serialize};
 
-pub fn ui<B: Backend>(f: &mut Frame<B>) {
+pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .margin(1)
@@ -48,11 +53,12 @@ pub fn ui<B: Backend>(f: &mut Frame<B>) {
 
     // Hard coding this for now but should be parametetric and determined by some
     // application state structure which contains the currently highlighted course
-    let course = create_course_from_yaml_file("/home/gerb/uni/courses/SC/SC42150-SSP/");
+    // let course = create_course_from_yaml_file("/home/gerb/uni/courses/SC/SC42150-SSP/");
+    let course = &app.highlighted_course.clone();
 
     draw_course_info_block(&course, f, chunk_left[0]);
     draw_course_operations_block(f, chunk_left[1]);
-    draw_current_courses_block(f, chunk_left[2]);
+    draw_current_courses_block(f, chunk_left[2], app);
     draw_date_block(f, chunk_right_top[0]);
     draw_task_status_block(f, chunk_right_top[1]);
     draw_tasks_view_block(&course, f, chunk_right[1]);
@@ -76,21 +82,28 @@ pub fn draw_course_info_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk
 }
 
 
-pub fn draw_current_courses_block<B>(f: &mut Frame<B>, layout_chunk: Rect) 
+pub fn draw_current_courses_block<B>(f: &mut Frame<B>, layout_chunk: Rect, app: &mut App) 
     where B: Backend {
 
     let mut rows: Vec<Row> = Vec::new();
     let active_courses = retrieve_courses_active(COURSES_DIR);
 
+    let selected_style = Style::default().add_modifier(Modifier::BOLD);
+
     for course in active_courses {
         rows.push(
-            Row::new(vec![Cell::from(format!("{}-{}", course.code, course.short))]),
-        )
+            Row::new(
+                vec![
+                    Cell::from(format!("{}-{}", course.code, course.short))
+                        .style(Style::default().fg(get_color_for_course_code(course)))
+                ])
+        );
     }
     let t = Table::new(rows)
         .block(Block::default().borders(Borders::ALL).title("Active Courses"))
+        .highlight_style(selected_style)
         .widths(&[Constraint::Percentage(100)]);
-    f.render_widget(t, layout_chunk);
+    f.render_stateful_widget(t, layout_chunk, &mut app.state);
 }
 
 pub fn draw_course_operations_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
@@ -107,6 +120,8 @@ pub fn draw_course_operations_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
     f.render_widget(t, layout_chunk);
 }
 
+// This function does too much. Refactor such that the calculation of the days until due date
+// happens in a seperate function.
 pub fn draw_tasks_view_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk: Rect)
     where B: Backend {
 
@@ -141,7 +156,7 @@ pub fn draw_tasks_view_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk:
             Cell::from(format!("{}", task.description())),
             Cell::from(format!("{}", task.urgency().unwrap())),
         ];
-        let row = Row::new(row_data);
+        let row = Row::new(row_data).style(get_task_styling(task));
         rows.push(row);
     }
 
@@ -168,11 +183,14 @@ pub fn draw_date_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
     let local: chrono::DateTime<chrono::Local> = chrono::Local::now();
     let formatted_date = local.format("%A %d %B %Y %H:%M").to_string();
     let t = Table::new(vec![
-        Row::new(vec![Cell::from(format!("{}", formatted_date))]),
+        Row::new(vec![
+            Cell::from(format!("{}", formatted_date))
+                .style(Style::default().fg(Color::Reset))
+        ]),
         ])
         .block(Block::default()
             .borders(Borders::ALL)
-            .style(Style::default().fg(Color::LightBlue).add_modifier(Modifier::BOLD))
+            .style(Style::default().fg(Color::LightBlue))
             .title("Today is"))
         .widths(&[Constraint::Percentage(100)]);
     f.render_widget(t, layout_chunk);
@@ -221,11 +239,14 @@ pub fn draw_task_status_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
             task_blocked_count);
 
     let t = Table::new(vec![
-        Row::new(vec![Cell::from(task_status_string)]),
+        Row::new(vec![
+            Cell::from(task_status_string)
+                .style(Style::default().fg(Color::Reset))
+        ]),
     ])
         .block(Block::default()
             .borders(Borders::ALL)
-            .style(Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD))
+            .style(Style::default().fg(Color::Blue))
             .title("Uni Tasks State"))
         .widths(&[Constraint::Percentage(100)]);
     f.render_widget(t, layout_chunk);
