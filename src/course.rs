@@ -19,6 +19,7 @@ pub struct Course {
     pub quarter: String,
     pub url: String,
     pub active: bool,
+    pub credits: String,
 }
 
 impl Course {
@@ -81,6 +82,20 @@ pub fn retrieve_courses_active(courses_dir: &str) -> Vec<Course> {
             if course.active == true {
                 course_list.push(course);
             }
+        }
+    }
+    course_list
+}
+
+pub fn retrieve_courses_all(courses_dir: &str) -> Vec<Course> {
+    let mut course_list: Vec<Course> = Vec::new();
+
+    let base_course_code_paths = fs::read_dir(courses_dir).unwrap();
+    for course_paths in base_course_code_paths {
+        let course_dirs = fs::read_dir(course_paths.unwrap().path().display().to_string()).unwrap();
+        for course_dir in course_dirs {
+            let course = create_course_from_yaml_file(&course_dir.unwrap().path().display().to_string());
+            course_list.push(course);
         }
     }
     course_list

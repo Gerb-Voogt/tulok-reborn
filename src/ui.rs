@@ -36,7 +36,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let chunk_left = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
-        .constraints([Constraint::Percentage(25), Constraint::Percentage(50), Constraint::Percentage(25)].as_ref())
+        .constraints([Constraint::Percentage(30), Constraint::Percentage(45), Constraint::Percentage(25)].as_ref())
         .split(chunks[0]);
 
     let chunk_right = Layout::default()
@@ -68,12 +68,38 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 pub fn draw_course_info_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk: Rect)
     where B: Backend {
 
+    let course_code_styled = Spans::from(vec![
+        Span::raw("Code: "),
+        Span::styled(course.code.to_string(), Style::default().add_modifier(Modifier::BOLD))
+    ]);
+    let course_title_styled = Spans::from(vec![
+        Span::raw("Title: "),
+        Span::styled(course.title.to_string(), Style::default().add_modifier(Modifier::BOLD))
+    ]);
+    let course_year_styled = Spans::from(vec![
+        Span::raw("Year: "),
+        Span::styled(course.year.to_string(), Style::default().add_modifier(Modifier::BOLD))
+    ]);
+    let course_quarter_styled = Spans::from(vec![
+        Span::raw("Quarter: "),
+        Span::styled(course.quarter.to_string(), Style::default().add_modifier(Modifier::BOLD))
+    ]);
+    let course_active_styled = Spans::from(vec![
+        Span::raw("Active: "),
+        Span::styled(course.active.to_string(), Style::default().add_modifier(Modifier::BOLD))
+    ]);
+    let course_credits_styled = Spans::from(vec![
+        Span::raw("ECTS: "),
+        Span::styled(course.credits.to_string(), Style::default().add_modifier(Modifier::BOLD))
+    ]);
+
     let t = Table::new(vec![
-        Row::new(vec![Cell::from(format!("Code: {}", course.code))]),
-        Row::new(vec![Cell::from(format!("Title: {}", course.title))]),
-        Row::new(vec![Cell::from(format!("Year: {}", course.year))]),
-        Row::new(vec![Cell::from(format!("Quarter: {}", course.quarter))]),
-        Row::new(vec![Cell::from(format!("Active: {}", course.active.to_string()))]),
+        Row::new(vec![Cell::from(course_code_styled)]),
+        Row::new(vec![Cell::from(course_title_styled)]),
+        Row::new(vec![Cell::from(course_year_styled)]),
+        Row::new(vec![Cell::from(course_quarter_styled)]),
+        Row::new(vec![Cell::from(course_active_styled)]),
+        Row::new(vec![Cell::from(course_credits_styled)]),
         ])
         .block(Block::default().borders(Borders::ALL).title("Course Info"))
         .widths(&[Constraint::Percentage(100)]);
@@ -100,7 +126,7 @@ pub fn draw_current_courses_block<B>(f: &mut Frame<B>, layout_chunk: Rect, app: 
         );
     }
     let t = Table::new(rows)
-        .block(Block::default().borders(Borders::ALL).title("Active Courses"))
+        .block(Block::default().borders(Borders::ALL).title("Courses"))
         .highlight_style(selected_style)
         .widths(&[Constraint::Percentage(100)]);
     f.render_stateful_widget(t, layout_chunk, &mut app.state);
@@ -113,6 +139,7 @@ pub fn draw_course_operations_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
         Row::new(vec![Cell::from(format!("[F]iles"))]),
         Row::new(vec![Cell::from(format!("[N]otes"))]),
         Row::new(vec![Cell::from(format!("[B]rightspace"))]),
+        Row::new(vec![Cell::from(format!("[q]uit"))]),
         ])
         .block(Block::default().borders(Borders::ALL).title("Operations"))
         .widths(&[Constraint::Percentage(100)]);
@@ -132,7 +159,7 @@ pub fn draw_tasks_view_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk:
         Cell::from("---"),
         Cell::from("-----------"),
         Cell::from("-------"),
-    ]);
+    ]).style(Style::default().fg(Color::Reset));
     let mut rows: Vec<Row> = vec![first_row_data];
     for task in tasks {
         let today = chrono::Utc::now().naive_utc();
@@ -161,7 +188,10 @@ pub fn draw_tasks_view_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk:
     }
 
     let t = Table::new(rows)
-        .block(Block::default().borders(Borders::ALL).title("Up Next"))
+        .block(Block::default()
+            .borders(Borders::ALL)
+            .title("Up Next")
+            .style(Style::default().fg(Color::Blue)))
         .widths(&[
             Constraint::Percentage(3),
             Constraint::Percentage(7),
@@ -173,7 +203,7 @@ pub fn draw_tasks_view_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk:
             Cell::from("due"),
             Cell::from("description"),
             Cell::from("urgency"),
-        ]));
+        ]).style(Style::default().fg(Color::Reset)));
 
     f.render_widget(t, layout_chunk);
 }
