@@ -35,7 +35,7 @@ pub fn get_pending_tasks(course: &Course) -> std::io::Result<Vec<Task>> {
 pub fn get_all_pending_tasks() -> std::io::Result<Vec<Task>> {
     let command = std::process::Command::new("sh")
         .arg("-c")
-        .arg(format!("task +PENDING project:uni export"))
+        .arg(format!("task +PENDING project:uni or project:work export"))
         .output()
         .expect("Something went wrong");
     let stdout_reader = BufReader::new(&command.stdout[..]);

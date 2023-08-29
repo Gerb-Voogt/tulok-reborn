@@ -111,10 +111,9 @@ pub fn get_color_for_course_code(course: Course) -> Color {
     match prefix {
         "AM" | "TW" | "WI" => Color::Magenta,
         "CESE" | "EE" | "ET" => Color::Red,
-        "CS" | "IN" | "CSE" => Color::Cyan,
+        "CS" | "IN" | "CSE" | "RO" => Color::Cyan,
         "WB" | "ME" => Color::Yellow,
         "SC" => Color::Blue,
-        "RO" => Color::Green,
         _ => Color::Gray,
     }
 }
