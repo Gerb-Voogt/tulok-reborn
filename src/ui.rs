@@ -113,6 +113,7 @@ pub fn draw_current_courses_block<B>(f: &mut Frame<B>, layout_chunk: Rect, app: 
 
     let mut rows: Vec<Row> = Vec::new();
     let active_courses = retrieve_courses_active(COURSES_DIR);
+    let active_courses = Course::sort_by_quarter(active_courses);
 
     let selected_style = Style::default().add_modifier(Modifier::BOLD);
 
@@ -191,7 +192,7 @@ pub fn draw_tasks_view_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk:
         .block(Block::default()
             .borders(Borders::ALL)
             .title("Up Next")
-            .style(Style::default().fg(Color::Blue)))
+            .style(Style::default().fg(Color::Reset)))
         .widths(&[
             Constraint::Percentage(3),
             Constraint::Percentage(7),
@@ -220,7 +221,7 @@ pub fn draw_date_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
         ])
         .block(Block::default()
             .borders(Borders::ALL)
-            .style(Style::default().fg(Color::LightBlue))
+            .style(Style::default().fg(Color::Reset))
             .title("Today is"))
         .widths(&[Constraint::Percentage(100)]);
     f.render_widget(t, layout_chunk);
@@ -276,7 +277,7 @@ pub fn draw_task_status_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
     ])
         .block(Block::default()
             .borders(Borders::ALL)
-            .style(Style::default().fg(Color::Blue))
+            .style(Style::default().fg(Color::Reset))
             .title("Uni Tasks State"))
         .widths(&[Constraint::Percentage(100)]);
     f.render_widget(t, layout_chunk);
