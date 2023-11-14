@@ -10,7 +10,7 @@ pub const COURSES_DIR: &str = "/home/gerb/uni/courses/";
 pub const NOTES_DIR: &str = "/home/gerb/uni/Vault-MSc/";
 
 // Deriving these allows for automagically importing the yaml files
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)] 
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)] 
 pub struct Course {
     pub title: String,
     pub short: String,
@@ -73,12 +73,18 @@ pub fn create_course_from_yaml_file(course_path: &str) -> Course {
 /// because it has unwraps all over the place.
 pub fn retrieve_courses_active(courses_dir: &str) -> Vec<Course> {
     let mut course_list: Vec<Course> = Vec::new();
-
     let base_course_code_paths = fs::read_dir(courses_dir).unwrap();
+
     for course_paths in base_course_code_paths {
-        let course_dirs = fs::read_dir(course_paths.unwrap().path().display().to_string()).unwrap();
+        let course_dirs = fs::read_dir(course_paths.unwrap()
+                                            .path()
+                                            .display()
+                                            .to_string()).unwrap();
         for course_dir in course_dirs {
-            let course = create_course_from_yaml_file(&course_dir.unwrap().path().display().to_string());
+            let course = create_course_from_yaml_file(&course_dir.unwrap()
+                                                        .path()
+                                                        .display()
+                                                        .to_string());
             if course.active == true {
                 course_list.push(course);
             }
@@ -116,4 +122,35 @@ pub fn get_color_for_course_code(course: Course) -> Color {
         "SC" => Color::Blue,
         _ => Color::Gray,
     }
+}
+
+
+pub fn convert_quarter_string_to_number(quarter: &str) -> Option<i32>  {
+    let qrtr = quarter.to_lowercase().to_string();
+    match qrtr.as_str() {
+        "q1" => Some(1),
+        "q2" => Some(2),
+        "q3" => Some(3),
+        "q4" => Some(4),
+        "q1/q2" => Some(1),
+        "q3/q4" => Some(3),
+        _ => None,
+    }
+}
+
+pub fn primitive_sort_by_quarter(courses_list: Vec<Course>) -> Vec<Course> {
+    let mut courses_sorted: Vec<Course> = Vec::new();
+    let n: &usize = &courses_list.len();
+    let mut i = 0;
+    while courses_sorted.len() != *n {
+        for course in &courses_list {
+            let course_quarter_number = convert_quarter_string_to_number(&course.quarter);
+            if course_quarter_number.unwrap_or(0) == i {
+                courses_sorted.push(course.clone());
+            }
+        }
+        i += 1;
+    }
+    courses_sorted.reverse();
+    courses_sorted
 }
