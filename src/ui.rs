@@ -93,15 +93,25 @@ pub fn draw_course_info_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk
         Span::styled(course.credits.to_string(), Style::default().add_modifier(Modifier::BOLD))
     ]);
 
+    let border_color = get_color_for_course_code(course.clone());
     let t = Table::new(vec![
-        Row::new(vec![Cell::from(course_code_styled)]),
-        Row::new(vec![Cell::from(course_title_styled)]),
-        Row::new(vec![Cell::from(course_year_styled)]),
-        Row::new(vec![Cell::from(course_quarter_styled)]),
-        Row::new(vec![Cell::from(course_active_styled)]),
-        Row::new(vec![Cell::from(course_credits_styled)]),
+        Row::new(vec![Cell::from(course_code_styled)])
+                .style(Style::default().fg(Color::Reset)),
+        Row::new(vec![Cell::from(course_title_styled)])
+                .style(Style::default().fg(Color::Reset)),
+        Row::new(vec![Cell::from(course_year_styled)])
+                .style(Style::default().fg(Color::Reset)),
+        Row::new(vec![Cell::from(course_quarter_styled)])
+                .style(Style::default().fg(Color::Reset)),
+        Row::new(vec![Cell::from(course_active_styled)])
+                .style(Style::default().fg(Color::Reset)),
+        Row::new(vec![Cell::from(course_credits_styled)])
+                .style(Style::default().fg(Color::Reset)),
         ])
-        .block(Block::default().borders(Borders::ALL).title("Course Info"))
+        .block(Block::default()
+            .borders(Borders::ALL)
+            .style(Style::default().fg(border_color))
+            .title("Course Info"))
         .widths(&[Constraint::Percentage(100)]);
 
     f.render_widget(t, layout_chunk);
@@ -134,12 +144,16 @@ pub fn draw_course_operations_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
     where B: Backend {
 
     let t = Table::new(vec![
-        Row::new(vec![Cell::from(format!("[F]iles"))]),
-        Row::new(vec![Cell::from(format!("[N]otes"))]),
-        Row::new(vec![Cell::from(format!("[B]rightspace"))]),
-        Row::new(vec![Cell::from(format!("[q]uit"))]),
+        Row::new(vec![Cell::from(format!("[F]iles"))])
+            .style(Style::default().fg(Color::Reset)),
+        Row::new(vec![Cell::from(format!("[N]otes"))])
+            .style(Style::default().fg(Color::Reset)),
+        Row::new(vec![Cell::from(format!("[B]rightspace"))])
+            .style(Style::default().fg(Color::Reset)),
+        Row::new(vec![Cell::from(format!("[q]uit"))])
+            .style(Style::default().fg(Color::Reset)),
         ])
-        .block(Block::default().borders(Borders::ALL).title("Operations"))
+        .block(Block::default().borders(Borders::ALL).title("Operations").style(Style::default().fg(Color::DarkGray)))
         .widths(&[Constraint::Percentage(100)]);
 
     f.render_widget(t, layout_chunk);
@@ -150,6 +164,7 @@ pub fn draw_course_operations_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
 pub fn draw_tasks_view_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk: Rect)
     where B: Backend {
 
+    let border_color = get_color_for_course_code(course.clone());
     let tasks = get_pending_tasks(course).unwrap();
 
     let first_row_data: Row = Row::new(vec![
@@ -189,7 +204,7 @@ pub fn draw_tasks_view_block<B>(course: &Course, f: &mut Frame<B>, layout_chunk:
         .block(Block::default()
             .borders(Borders::ALL)
             .title("Up Next")
-            .style(Style::default().fg(Color::Reset)))
+            .style(Style::default().fg(border_color)))
         .widths(&[
             Constraint::Percentage(3),
             Constraint::Percentage(7),
@@ -218,7 +233,7 @@ pub fn draw_date_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
         ])
         .block(Block::default()
             .borders(Borders::ALL)
-            .style(Style::default().fg(Color::Reset))
+            .style(Style::default().fg(Color::DarkGray))
             .title("Today is"))
         .widths(&[Constraint::Percentage(100)]);
     f.render_widget(t, layout_chunk);
@@ -274,7 +289,7 @@ pub fn draw_task_status_block<B>(f: &mut Frame<B>, layout_chunk: Rect)
     ])
         .block(Block::default()
             .borders(Borders::ALL)
-            .style(Style::default().fg(Color::Reset))
+            .style(Style::default().fg(Color::DarkGray))
             .title("Uni Tasks State"))
         .widths(&[Constraint::Percentage(100)]);
     f.render_widget(t, layout_chunk);
