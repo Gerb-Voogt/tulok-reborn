@@ -4,7 +4,7 @@ use crate::course::{
     self,
     Course,
     retrieve_courses_active,
-    COURSES_DIR
+    COURSES_DIR, primitive_sort_by_quarter
 };
 use crate::tmux;
 
@@ -33,7 +33,7 @@ pub struct App {
 
 impl App {
     pub fn new() -> App {
-        let active_courses_list = retrieve_courses_active(COURSES_DIR);
+        let active_courses_list = primitive_sort_by_quarter(retrieve_courses_active(COURSES_DIR));
         let first_course = &active_courses_list[0];
         App {
             highlighted_course: first_course.clone(),

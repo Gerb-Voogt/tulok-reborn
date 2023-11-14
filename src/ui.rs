@@ -56,8 +56,8 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // let course = create_course_from_yaml_file("/home/gerb/uni/courses/SC/SC42150-SSP/");
     let course = &app.highlighted_course.clone();
 
-    draw_course_info_block(&course, f, chunk_left[0]);
     draw_current_courses_block(f, chunk_left[1], app);
+    draw_course_info_block(&course, f, chunk_left[0]);
     draw_course_operations_block(f, chunk_left[2]);
     draw_date_block(f, chunk_right_top[0]);
     draw_task_status_block(f, chunk_right_top[1]);
@@ -112,11 +112,8 @@ pub fn draw_current_courses_block<B>(f: &mut Frame<B>, layout_chunk: Rect, app: 
     where B: Backend {
 
     let mut rows: Vec<Row> = Vec::new();
-    let active_courses = retrieve_courses_active(COURSES_DIR);
-    let active_courses = Course::sort_by_quarter(active_courses);
-
+    let active_courses = primitive_sort_by_quarter(retrieve_courses_active(COURSES_DIR));
     let selected_style = Style::default().add_modifier(Modifier::BOLD);
-
     for course in active_courses {
         rows.push(
             Row::new(
